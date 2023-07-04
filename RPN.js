@@ -21,7 +21,10 @@ class RPN {
 		let i = 0;
 
 		while (i < this.expression.length){
-			if (!Number.isNaN(+this.expression[i])){
+			if (
+				!Number.isNaN(+this.expression[i]) || 
+				(this.expression[i] === "-" && (this.#operatorsPriority.hasOwnProperty(this.expression[i - 1]) || i === 0)))
+			{
 				stack.push(parseFloat(this.expression.slice(i)).toString());
 				i += stack.at(-1).length - 1;
 			}
@@ -70,7 +73,10 @@ class RPN {
 				continue;
 			}
 
-			if (!Number.isNaN(+this.rpnExpression[i])){
+			if (
+				!Number.isNaN(+this.rpnExpression[i]) || 
+				(this.expression[i] === "-" && (this.#operatorsPriority.hasOwnProperty(this.expression[i - 1]) || i === 0)))
+			{
 				operands.push(parseFloat(this.rpnExpression.slice(i)));
 				i += operands.at(-1).toString().length - 1;
 			}
