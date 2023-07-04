@@ -1,6 +1,14 @@
 'use strict';
 
 class RPN {
+	#operatorsPriority = {
+		"+": 1,
+		"-": 1,
+		"*": 2,
+		"/": 2,
+		"^": 3
+	};
+
 	constructor(expression){
 		this.expression = expression;
 		this.rpnExpression = "";
@@ -18,8 +26,28 @@ class RPN {
 				i += stack.at(-1).length - 1;
 			}
 
+			else if (this.expression[i] === "("){
+				stack.push(this.expression[i]);
+			}
+
+			else if (this.expression[i] === ")"){
+				let j = stack.length - 1;
+
+				while (stack[j] !== "("){
+					j--;
+				}
+
+				stack.splice(j, 1);
+			}
+
 			else {
-				while (stack.length) {
+				const thisOperator = this.expression[i];
+
+				while (stack.length && stack.at(-1) !== "(") {
+					if (this.#operatorsPriority.hasOwnProperty(stack.at(-1)) && this.#operatorsPriority[stack.at(-1)] < this.#operatorsPriority[thisOperator]){
+						break;
+					}
+
 					this.rpnExpression += stack.pop() + " ";
 				}
 				
@@ -50,13 +78,33 @@ class RPN {
 			else {
 				switch (this.rpnExpression[i]) {
 					case "+":
-						this.result = operands[0] + operands[1];
-						operands = [this.result];
+						this.result = operands.at(-2) + operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
 						break;
 
 					case "-":
-						this.result = operands[0] - operands[1];
-						operands = [this.result];
+						this.result = operands.at(-2) - operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
+						break;
+
+					case "*":
+						this.result = operands.at(-2) * operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
+						break;
+
+					case "/":
+						this.result = operands.at(-2) / operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
+						break;
+
+					case "^":
+						this.result = operands.at(-2) ** operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
 						break;
 				}
 			}
