@@ -6,7 +6,8 @@ class RPN {
 		"-": 1,
 		"*": 2,
 		"/": 2,
-		"^": 3
+		"^": 3,
+		"r": 3
 	};
 
 	constructor(expression){
@@ -109,6 +110,12 @@ class RPN {
 
 					case "^":
 						this.result = operands.at(-2) ** operands.at(-1);
+						operands.pop();
+						operands[operands.length - 1] = this.result;
+						break;
+
+					case "r":
+						this.result = operands.at(-2) ** (1 / operands.at(-1));
 						operands.pop();
 						operands[operands.length - 1] = this.result;
 						break;
