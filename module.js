@@ -1,15 +1,20 @@
 'use strict';
 
 const normalize = (expression) => {
-	const operators = ["+", "-", "*", "/", "^", "r", "."];
+	const operators = ["+", "-", "*", "/", "^", "r", "(", ")", "."];
 	let normalized = "";
 	let onFractionalZero = false;
+	let isNegativeBracket = false;
 
 	for (let i = 0; i < expression.length; i++){
 		const isOperator = operators.includes(expression[i]);
 
 		if (onFractionalZero && isOperator){
 			onFractionalZero = false;
+		}
+
+		if (expression[i] === "-" && expression[i + 1] === "("){
+			isNegativeBracket = true;
 		}
 
 		if (expression[i] === " " || onFractionalZero){
@@ -22,10 +27,16 @@ const normalize = (expression) => {
 				continue;
 			}
 
+			if (isNegativeBracket){
+				normalized += "-1*";
+				isNegativeBracket = false;
+				continue;
+			}
+
 			normalized += expression[i];
 		}
 
-		else if (!Number.isNaN(+expression[i])){
+		else if (!Number.isNaN(+expression[i])){ // if (!Number.isNaN(+expression[i]))
 			normalized += expression[i];
 		}
 	}

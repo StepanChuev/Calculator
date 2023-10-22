@@ -16,6 +16,28 @@ class RPN {
 		this.result = 0;
 	}
 
+	#getExpressionInBrackets(expression, index = 0){
+		let expressionInBrackets = "";
+		let amountBrackets = 1;
+		index += (expression[index] === "(") ? 1 : 0;
+
+		while ((expression[index] !== ")" || amountBrackets !== 1) && index < expression.length){
+			expressionInBrackets += expression[index];
+
+			if (expression[index] === "("){
+				amountBrackets++;
+			}
+
+			else if (expression[index] === ")"){
+				amountBrackets--;
+			}
+
+			index++;
+		}
+
+		return expressionInBrackets;
+	}
+
 	expressionToRPN(){
 		let stack = [];
 		let expression = this.expression;
@@ -31,17 +53,9 @@ class RPN {
 			}
 
 			else if (this.expression[i] === "("){
-				stack.push(this.expression[i]);
-			}
-
-			else if (this.expression[i] === ")"){
-				let j = stack.length - 1;
-
-				while (stack[j] !== "("){
-					j--;
-				}
-
-				stack.splice(j, 1);
+				const expInBrackets = this.#getExpressionInBrackets(this.expression, i);
+				this.rpnExpression += new RPN(expInBrackets + "=").expressionToRPN();
+				i += expInBrackets.length + 1;
 			}
 
 			else {
@@ -55,7 +69,7 @@ class RPN {
 					this.rpnExpression += stack.pop() + " ";
 				}
 				
-				stack.push(this.expression[i]);
+				stack.push(thisOperator);
 			}
 
 			i++;
@@ -76,13 +90,13 @@ class RPN {
 
 			if (
 				!Number.isNaN(+this.rpnExpression[i]) || 
-				(this.expression[i] === "-" && (this.#operatorsPriority.hasOwnProperty(this.expression[i - 1]) || i === 0)))
+				(this.rpnExpression[i] === "-" && (i + 1 < this.rpnExpression.length && this.rpnExpression[i + 1] !== " ")))
 			{
 				operands.push(parseFloat(this.rpnExpression.slice(i)));
 				i += operands.at(-1).toString().length - 1;
 			}
 
-			else {
+			else if ((i > 0 && this.rpnExpression[i - 1] === " ") && (i + 1 < this.rpnExpression.length && this.rpnExpression[i + 1] === " ")){
 				switch (this.rpnExpression[i]) {
 					case "+":
 						this.result = operands.at(-2) + operands.at(-1);
@@ -123,6 +137,10 @@ class RPN {
 			}
 
 			i++;
+		}
+
+		if (operands.at(-1) !== this.result){
+			this.result = operands.at(-1);
 		}
 
 		return this.result;
