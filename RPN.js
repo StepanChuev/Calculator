@@ -10,6 +10,12 @@ class RPN {
 		"r": 3
 	};
 
+	#nameFunctions = {
+		"sin": Math.sin, 
+		"cos": Math.cos, 
+		"tg": Math.tan
+	};
+
 	constructor(expression){
 		this.expression = expression;
 		this.rpnExpression = "";
@@ -41,6 +47,7 @@ class RPN {
 	expressionToRPN(){
 		let stack = [];
 		let expression = this.expression;
+		let nameFunction = "";
 		let i = 0;
 
 		while (i < this.expression.length){
@@ -54,11 +61,19 @@ class RPN {
 
 			else if (this.expression[i] === "("){
 				const expInBrackets = this.#getExpressionInBrackets(this.expression, i);
-				this.rpnExpression += new RPN(expInBrackets + "=").expressionToRPN();
+
+				if (this.#nameFunctions.hasOwnProperty(nameFunction)){
+					this.rpnExpression += nameFunction + "(" + new RPN(expInBrackets + "=").expressionToRPN().slice(0, -1) + ") ";
+				}
+
+				else {
+					this.rpnExpression += new RPN(expInBrackets + "=").expressionToRPN();
+				}
+				
 				i += expInBrackets.length + 1;
 			}
 
-			else {
+			else if (this.expression[i] === "=" || this.#operatorsPriority.hasOwnProperty(this.expression[i])){
 				const thisOperator = this.expression[i];
 
 				while (stack.length && stack.at(-1) !== "(") {
@@ -72,6 +87,10 @@ class RPN {
 				stack.push(thisOperator);
 			}
 
+			else {
+				nameFunction += this.expression[i];
+			}
+
 			i++;
 		}
 
@@ -80,6 +99,7 @@ class RPN {
 
 	calculateRPN(){
 		let operands = [];
+		let nameFunction = "";
 		let i = 0;
 
 		while (i < this.rpnExpression.length){
@@ -134,6 +154,23 @@ class RPN {
 						operands[operands.length - 1] = this.result;
 						break;
 				}
+			}
+
+			else if (this.#nameFunctions.hasOwnProperty(nameFunction)){
+				const expInBrackets = this.#getExpressionInBrackets(this.rpnExpression, i);
+				let parameterValue = new RPN("");
+
+				parameterValue.rpnExpression = expInBrackets + " =";
+				parameterValue = parameterValue.calculateRPN();
+
+				this.result = this.#nameFunctions[nameFunction](parameterValue); // this.#nameFunctions[nameFunction](parameterValue)
+				operands.push(this.result);
+				nameFunction = "";
+				i += expInBrackets.length;
+			}
+
+			else {
+				nameFunction += this.rpnExpression[i];
 			}
 
 			i++;
