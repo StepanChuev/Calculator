@@ -36,7 +36,7 @@ const normalize = (expression) => {
 			normalized += expression[i];
 		}
 
-		else if (!Number.isNaN(+expression[i])){ // if (!Number.isNaN(+expression[i]))
+		else { // if (!Number.isNaN(+expression[i]))
 			normalized += expression[i];
 		}
 	}
@@ -44,4 +44,16 @@ const normalize = (expression) => {
 	normalized += "=";
 
 	return normalized;
+};
+
+
+const factorial = (n) => {
+	let result = n;
+
+	while (n > 1){
+		n -= 1;
+		result *= n;
+	}
+
+	return result;
 };

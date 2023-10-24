@@ -11,9 +11,12 @@ class RPN {
 	};
 
 	#nameFunctions = {
+		"sqrt": Math.sqrt,
+		"cbrt": Math.cbrt,
 		"sin": Math.sin, 
 		"cos": Math.cos, 
-		"tg": Math.tan
+		"tg": Math.tan,
+		"fact": factorial
 	};
 
 	constructor(expression){
@@ -64,6 +67,7 @@ class RPN {
 
 				if (this.#nameFunctions.hasOwnProperty(nameFunction)){
 					this.rpnExpression += nameFunction + "(" + new RPN(expInBrackets + "=").expressionToRPN().slice(0, -1) + ") ";
+					nameFunction = "";
 				}
 
 				else {
@@ -73,7 +77,7 @@ class RPN {
 				i += expInBrackets.length + 1;
 			}
 
-			else if (this.expression[i] === "=" || this.#operatorsPriority.hasOwnProperty(this.expression[i])){
+			else if (this.expression[i] === "=" || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
 				const thisOperator = this.expression[i];
 
 				while (stack.length && stack.at(-1) !== "(") {
@@ -87,7 +91,7 @@ class RPN {
 				stack.push(thisOperator);
 			}
 
-			else {
+			else if (!this.#operatorsPriority.hasOwnProperty(this.expression[i]) || nameFunction.length > 0){
 				nameFunction += this.expression[i];
 			}
 
@@ -169,7 +173,7 @@ class RPN {
 				i += expInBrackets.length;
 			}
 
-			else {
+			else if (!["(", ")"].includes(this.rpnExpression[i])){
 				nameFunction += this.rpnExpression[i];
 			}
 
