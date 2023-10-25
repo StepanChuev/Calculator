@@ -10,7 +10,7 @@ class RPN {
 		"r": 3
 	};
 
-	#nameFunctions = {
+	#functions = {
 		"sqrt": Math.sqrt,
 		"cbrt": Math.cbrt,
 		"sin": Math.sin, 
@@ -65,7 +65,7 @@ class RPN {
 			else if (this.expression[i] === "("){
 				const expInBrackets = this.#getExpressionInBrackets(this.expression, i);
 
-				if (this.#nameFunctions.hasOwnProperty(nameFunction)){
+				if (this.#functions.hasOwnProperty(nameFunction)){
 					this.rpnExpression += nameFunction + "(" + new RPN(expInBrackets + "=").expressionToRPN().slice(0, -1) + ") ";
 					nameFunction = "";
 				}
@@ -160,14 +160,14 @@ class RPN {
 				}
 			}
 
-			else if (this.#nameFunctions.hasOwnProperty(nameFunction)){
+			else if (this.#functions.hasOwnProperty(nameFunction)){
 				const expInBrackets = this.#getExpressionInBrackets(this.rpnExpression, i);
 				let parameterValue = new RPN("");
 
 				parameterValue.rpnExpression = expInBrackets + " =";
 				parameterValue = parameterValue.calculateRPN();
 
-				this.result = this.#nameFunctions[nameFunction](parameterValue); // this.#nameFunctions[nameFunction](parameterValue)
+				this.result = this.#functions[nameFunction](parameterValue); // this.#functions[nameFunction](parameterValue)
 				operands.push(this.result);
 				nameFunction = "";
 				i += expInBrackets.length;

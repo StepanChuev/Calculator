@@ -21,6 +21,10 @@ const normalize = (expression) => {
 			continue;
 		}
 
+		if (expression[i] === "-" && (operators.includes(normalized.at(-1)) || i === 0) && !operators.includes(expression[i + 1]) && Number.isNaN(+expression[i + 1])){
+			normalized += "-1*";
+		}
+
 		else if (isOperator){
 			if (expression[i] === "." && (parseInt(expression.slice(i + 1)) === 0 || Number.isNaN(+expression[i + 1]) || expression[i + 1] === " ")){
 				onFractionalZero = true;
