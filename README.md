@@ -1,7 +1,7 @@
 # Calculator
 Calculator using reversed polish notashion
 
-#Using
+# Using
 This calculator has brackets, operators and functions
 Operators -> "+", "-", "*", "/", "^", "r" - extracting the root
 Functions -> sin, cos, tg, sqrt - square root, cbrt - cube root, fact - factorial
