@@ -3,7 +3,9 @@ Calculator using reversed polish notashion
 
 # Using
 This calculator has brackets, operators and functions.
+
 Operators -> "+", "-", "*", "/", "^", "r" - extracting the root.
+
 Functions -> sin, cos, tg, sqrt - square root, cbrt - cube root, fact - factorial.
 
 You may write an expression using this operators, functions, brackets, spaces and unary minus. When you write an expression, you must observe following rules:
