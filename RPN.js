@@ -19,6 +19,11 @@ class RPN {
 		"fact": factorial
 	};
 
+	#constants = {
+		"pi": Math.PI,
+		"e": Math.E
+	};
+
 	constructor(expression){
 		this.expression = expression;
 		this.rpnExpression = "";
@@ -93,6 +98,11 @@ class RPN {
 
 			else if (!this.#operatorsPriority.hasOwnProperty(this.expression[i]) || nameFunction.length > 0){
 				nameFunction += this.expression[i];
+			}
+
+			if (this.#constants.hasOwnProperty(nameFunction) && (this.#operatorsPriority.hasOwnProperty(this.expression[i + 1]) || this.expression[i + 1] === "=")){
+				this.rpnExpression += this.#constants[nameFunction] + " ";
+				nameFunction = "";
 			}
 
 			i++;
