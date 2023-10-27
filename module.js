@@ -61,3 +61,7 @@ const factorial = (n) => {
 
 	return result;
 };
+
+const combination = (k, n) => {
+	return factorial(n) / (factorial(k) * factorial(n - k));
+};

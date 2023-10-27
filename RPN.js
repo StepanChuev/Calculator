@@ -13,10 +13,12 @@ class RPN {
 	#functions = {
 		"sqrt": Math.sqrt,
 		"cbrt": Math.cbrt,
+		"abs": Math.abs,
 		"sin": Math.sin, 
 		"cos": Math.cos, 
 		"tg": Math.tan,
-		"fact": factorial
+		"fact": factorial,
+		"comb": combination
 	};
 
 	#constants = {
@@ -52,6 +54,32 @@ class RPN {
 		return expressionInBrackets;
 	}
 
+	// TODO
+	#splitParameters(expression, separator){
+		const parameters = [""];
+		let amountBrackets = 0;
+
+		for (let i = 0; i < expression.length; i++){
+			if (expression[i] === "("){
+				amountBrackets++;
+			}
+
+			else if (expression[i] === ")"){
+				amountBrackets--;
+			}
+
+			if (expression[i] === separator && amountBrackets === 0){
+				parameters.push("");
+
+				continue;
+			}
+
+			parameters[parameters.length - 1] += expression[i];
+		}
+
+		return parameters;
+	}
+
 	expressionToRPN(){
 		let stack = [];
 		let expression = this.expression;
@@ -82,7 +110,7 @@ class RPN {
 				i += expInBrackets.length + 1;
 			}
 
-			else if (this.expression[i] === "=" || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
+			else if (this.expression[i] === "=" || this.expression[i] === "," || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
 				const thisOperator = this.expression[i];
 
 				while (stack.length && stack.at(-1) !== "(") {
@@ -93,7 +121,13 @@ class RPN {
 					this.rpnExpression += stack.pop() + " ";
 				}
 				
-				stack.push(thisOperator);
+				if (this.expression[i] !== ",") {
+					stack.push(thisOperator);
+				}
+
+				else {
+					this.rpnExpression += ", ";
+				}
 			}
 
 			else if (!this.#operatorsPriority.hasOwnProperty(this.expression[i]) || nameFunction.length > 0){
@@ -172,12 +206,17 @@ class RPN {
 
 			else if (this.#functions.hasOwnProperty(nameFunction)){
 				const expInBrackets = this.#getExpressionInBrackets(this.rpnExpression, i);
-				let parameterValue = new RPN("");
+				const parameters = this.#splitParameters(expInBrackets, ",");
 
-				parameterValue.rpnExpression = expInBrackets + " =";
-				parameterValue = parameterValue.calculateRPN();
+				for (let i = 0; i < parameters.length; i++){
+					const parameter = parameters[i];
 
-				this.result = this.#functions[nameFunction](parameterValue); // this.#functions[nameFunction](parameterValue)
+					parameters[i] = new RPN("");
+					parameters[i].rpnExpression = parameter + " =";
+					parameters[i] = parameters[i].calculateRPN();
+				}
+
+				this.result = this.#functions[nameFunction](...parameters); // this.#functions[nameFunction](parameterValue)
 				operands.push(this.result);
 				nameFunction = "";
 				i += expInBrackets.length;
