@@ -5,6 +5,6 @@ const calcBtn = document.querySelector('.calculate');
 let rpn = new RPN("");
 
 calcBtn.addEventListener("click", () => {
-	rpn.expression = normalize(input.value);
+	rpn.expression = input.value;
 	input.value = rpn.calculateExpression();
 });

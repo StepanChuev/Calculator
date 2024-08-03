@@ -54,7 +54,6 @@ class RPN {
 		return expressionInBrackets;
 	}
 
-	// TODO
 	#splitParameters(expression, separator){
 		const parameters = [""];
 		let amountBrackets = 0;
@@ -78,6 +77,106 @@ class RPN {
 		}
 
 		return parameters;
+	}
+
+	#extractFromStack(stack, thisOperator){
+		let extracted = "";
+
+		while (stack.length && stack.at(-1) !== "(") {
+			if (this.#operatorsPriority.hasOwnProperty(stack.at(-1)) && this.#operatorsPriority[stack.at(-1)] < this.#operatorsPriority[thisOperator]){
+				break;
+			}
+
+			extracted += stack.pop() + " ";
+		}
+
+		return extracted;
+	}
+
+	#getResultFromOperator(operand1, operand2, operator){
+		switch (operator) {
+			case "+":
+				return operand2 + operand1;
+
+			case "-":
+				return operand2 - operand1;
+
+			case "*":
+				return operand2 * operand1;
+
+			case "/":
+				return operand2 / operand1;
+
+			case "^":
+				return operand2 ** operand1;
+
+			case "r":
+				return operand2 ** (1 / operand1);
+		}
+	}
+
+	#calculateParameters(expInBrackets){
+		const parameters = this.#splitParameters(expInBrackets, ",");
+		const calculated = [];
+
+		for (let i = 0; i < parameters.length; i++){
+			const rpn = new RPN("");
+
+			rpn.rpnExpression = parameters[i] + " =";
+			calculated.push(rpn.calculateRPN());
+		}
+
+		return calculated;
+	}
+
+	normalize(expression){
+		const operators = ["+", "-", "*", "/", "^", "r", "(", ")", "."];
+		let normalized = "";
+		let onFractionalZero = false;
+		let isNegativeBracket = false;
+
+		for (let i = 0; i < expression.length; i++){
+			const isOperator = operators.includes(expression[i]);
+
+			if (onFractionalZero && isOperator){
+				onFractionalZero = false;
+			}
+
+			if (expression[i] === "-" && expression[i + 1] === "("){
+				isNegativeBracket = true;
+			}
+
+			if (expression[i] === " " || onFractionalZero){
+				continue;
+			}
+
+			if (expression[i] === "-" && (operators.includes(normalized.at(-1)) || i === 0) && !operators.includes(expression[i + 1]) && Number.isNaN(+expression[i + 1])){
+				normalized += "-1*";
+			}
+
+			else if (isOperator){
+				if (expression[i] === "." && (parseInt(expression.slice(i + 1)) === 0 || Number.isNaN(+expression[i + 1]) || expression[i + 1] === " ")){
+					onFractionalZero = true;
+					continue;
+				}
+
+				if (isNegativeBracket){
+					normalized += "-1*";
+					isNegativeBracket = false;
+					continue;
+				}
+
+				normalized += expression[i];
+			}
+
+			else {
+				normalized += expression[i];
+			}
+		}
+
+		normalized += "=";
+
+		return normalized;
 	}
 
 	expressionToRPN(){
@@ -113,13 +212,7 @@ class RPN {
 			else if (this.expression[i] === "=" || this.expression[i] === "," || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
 				const thisOperator = this.expression[i];
 
-				while (stack.length && stack.at(-1) !== "(") {
-					if (this.#operatorsPriority.hasOwnProperty(stack.at(-1)) && this.#operatorsPriority[stack.at(-1)] < this.#operatorsPriority[thisOperator]){
-						break;
-					}
-
-					this.rpnExpression += stack.pop() + " ";
-				}
+				this.rpnExpression += this.#extractFromStack(stack, this.expression[i]);
 				
 				if (this.expression[i] !== ",") {
 					stack.push(thisOperator);
@@ -165,58 +258,17 @@ class RPN {
 			}
 
 			else if ((i > 0 && this.rpnExpression[i - 1] === " ") && (i + 1 < this.rpnExpression.length && this.rpnExpression[i + 1] === " ")){
-				switch (this.rpnExpression[i]) {
-					case "+":
-						this.result = operands.at(-2) + operands.at(-1);
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
+				this.result = this.#getResultFromOperator(operands.at(-1), operands.at(-2), this.rpnExpression[i]);
 
-					case "-":
-						this.result = operands.at(-2) - operands.at(-1);
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
-
-					case "*":
-						this.result = operands.at(-2) * operands.at(-1);
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
-
-					case "/":
-						this.result = operands.at(-2) / operands.at(-1);
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
-
-					case "^":
-						this.result = operands.at(-2) ** operands.at(-1);
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
-
-					case "r":
-						this.result = operands.at(-2) ** (1 / operands.at(-1));
-						operands.pop();
-						operands[operands.length - 1] = this.result;
-						break;
-				}
+				operands.pop();
+				operands[operands.length - 1] = this.result;
 			}
 
 			else if (this.#functions.hasOwnProperty(nameFunction)){
 				const expInBrackets = this.#getExpressionInBrackets(this.rpnExpression, i);
-				const parameters = this.#splitParameters(expInBrackets, ",");
+				const parameters = this.#calculateParameters(expInBrackets);
 
-				for (let i = 0; i < parameters.length; i++){
-					const parameter = parameters[i];
-
-					parameters[i] = new RPN("");
-					parameters[i].rpnExpression = parameter + " =";
-					parameters[i] = parameters[i].calculateRPN();
-				}
-
-				this.result = this.#functions[nameFunction](...parameters); // this.#functions[nameFunction](parameterValue)
+				this.result = this.#functions[nameFunction](...parameters);
 				operands.push(this.result);
 				nameFunction = "";
 				i += expInBrackets.length;
@@ -239,6 +291,7 @@ class RPN {
 	calculateExpression(){
 		this.result = 0;
 		this.rpnExpression = "";
+		this.expression = this.normalize(this.expression);
 		this.rpnExpression = this.expressionToRPN();
 		return this.calculateRPN();
 	}
