@@ -26,6 +26,8 @@ class RPN {
 		"e": Math.E
 	};
 
+	#endOfExpression = "#";
+
 	constructor(expression){
 		this.expression = expression;
 		this.rpnExpression = "";
@@ -122,7 +124,7 @@ class RPN {
 		for (let i = 0; i < parameters.length; i++){
 			const rpn = new RPN("");
 
-			rpn.rpnExpression = parameters[i] + " =";
+			rpn.rpnExpression = parameters[i] + " " + this.#endOfExpression;
 			calculated.push(rpn.calculateRPN());
 		}
 
@@ -174,7 +176,7 @@ class RPN {
 			}
 		}
 
-		normalized += "=";
+		normalized += this.#endOfExpression;
 
 		return normalized;
 	}
@@ -198,18 +200,18 @@ class RPN {
 				const expInBrackets = this.#getExpressionInBrackets(this.expression, i);
 
 				if (this.#functions.hasOwnProperty(nameFunction)){
-					this.rpnExpression += nameFunction + "(" + new RPN(expInBrackets + "=").expressionToRPN().slice(0, -1) + ") ";
+					this.rpnExpression += nameFunction + "(" + new RPN(expInBrackets + this.#endOfExpression).expressionToRPN().slice(0, -1) + ") ";
 					nameFunction = "";
 				}
 
 				else {
-					this.rpnExpression += new RPN(expInBrackets + "=").expressionToRPN();
+					this.rpnExpression += new RPN(expInBrackets + this.#endOfExpression).expressionToRPN();
 				}
 				
 				i += expInBrackets.length + 1;
 			}
 
-			else if (this.expression[i] === "=" || this.expression[i] === "," || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
+			else if (this.expression[i] === this.#endOfExpression || this.expression[i] === "," || (this.#operatorsPriority.hasOwnProperty(this.expression[i]) && nameFunction.length <= 0)){
 				const thisOperator = this.expression[i];
 
 				this.rpnExpression += this.#extractFromStack(stack, this.expression[i]);
@@ -227,7 +229,7 @@ class RPN {
 				nameFunction += this.expression[i];
 			}
 
-			if (this.#constants.hasOwnProperty(nameFunction) && (this.#operatorsPriority.hasOwnProperty(this.expression[i + 1]) || this.expression[i + 1] === "=")){
+			if (this.#constants.hasOwnProperty(nameFunction) && (this.#operatorsPriority.hasOwnProperty(this.expression[i + 1]) || this.expression[i + 1] === this.#endOfExpression)){
 				this.rpnExpression += this.#constants[nameFunction] + " ";
 				nameFunction = "";
 			}
