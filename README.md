@@ -18,4 +18,4 @@ You may write an expression using this operators, functions, constants, brackets
 5. Trigonometric functions uses radians
 6. Write a decimal fractions with decimal point, for example -> "3.5"; "7.984"
 7. List function arguments with ",", for example -> "*comb*(2, 3)"
-8. Don't use "=", this operator denote end of expression
+8. Don't use "#", this operator denote end of expression
